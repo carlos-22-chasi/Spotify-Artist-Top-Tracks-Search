@@ -55,11 +55,37 @@ def get_songs_by_artists(token, artist_id):
     json_result = json.loads(result.content)["tracks"]
     return json_result
 
-token = get_token()
-artist_input = input("Enter artist name: ")
-artist = search_for_artists(token, artist_input)
-artist_id = artist["id"]
-songs = get_songs_by_artists(token, artist_id)
+def search_artist():
+    artist_name = artist_entry.get()
+    if artist_name.strip() == "":
+        messagebox.showerror("Input Error", "Please enter an artist name")
+        return
 
-for idx, song in enumerate(songs):
-    print(f"{idx+1}. {song['name']}")
+    token = get_token()
+    artist = search_for_artists(token, artist_name)
+    if artist is None:
+        messagebox.showinfo("No Results", "No artists with this name found")
+        return
+    
+    artist_id = artist["id"]
+    songs = get_songs_by_artists(token, artist_id)
+
+    results_text.delete(1.0, tk.END)  
+    results_text.insert(tk.END, f"Top Tracks for artist: {artist["name"]}\n")
+    for idx, song in enumerate(songs):
+        results_text.insert(tk.END, f"{idx + 1}. {song['name']}\n")
+
+root = tk.Tk()
+root.title("Spotify Artist Top Tracks")
+
+tk.Label(root, text="Enter Artist Name:").pack(pady=10)
+artist_entry = tk.Entry(root, width=50)
+artist_entry.pack(pady=5)
+
+search_button = tk.Button(root, text="Search", command=search_artist)
+search_button.pack(pady=10)
+
+results_text = tk.Text(root, height=15, width=50)
+results_text.pack(pady=10)
+
+root.mainloop()
