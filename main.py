@@ -11,6 +11,7 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
+#gets the spotify token from the client_id and client_secret
 def get_token():
     auth_string = client_id + ":" + client_secret
     auth_bytes = auth_string.encode("utf-8")
@@ -34,6 +35,7 @@ def get_token():
 def get_auth_header(token):
     return {"Authorization": "Bearer " + token}
 
+#using the input artist name, return the artist info from spotify
 def search_for_artists(token, artist_name):
     url = "https://api.spotify.com/v1/search"
     headers = get_auth_header(token)
@@ -48,6 +50,7 @@ def search_for_artists(token, artist_name):
         return None
     return json_result[0]
 
+#using artist id, return the tracks of the artist
 def get_songs_by_artists(token, artist_id):
     url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=US"
     headers = get_auth_header(token)
@@ -55,13 +58,14 @@ def get_songs_by_artists(token, artist_id):
     json_result = json.loads(result.content)["tracks"]
     return json_result
 
+#function to handle search button click from GUI
 def search_artist():
     artist_name = artist_entry.get()
     if artist_name.strip() == "":
         messagebox.showerror("Input Error", "Please enter an artist name")
         return
 
-    token = get_token()
+    token = get_token()   
     artist = search_for_artists(token, artist_name)
     if artist is None:
         messagebox.showinfo("No Results", "No artists with this name found")
@@ -70,11 +74,12 @@ def search_artist():
     artist_id = artist["id"]
     songs = get_songs_by_artists(token, artist_id)
 
-    results_text.delete(1.0, tk.END)  
-    results_text.insert(tk.END, f"Top Tracks for artist: {artist["name"]}\n")
+    results_text.delete(1.0, tk.END)  # Clear previous results
+    results_text.insert(tk.END, f"Top Tracks for artist: {artist["name"]}\n") #add the artist name to the restults_text
     for idx, song in enumerate(songs):
-        results_text.insert(tk.END, f"{idx + 1}. {song['name']}\n")
+        results_text.insert(tk.END, f"{idx + 1}. {song['name']}\n")  #add the top tracks to the restults_text
 
+# Setting up the GUI
 root = tk.Tk()
 root.title("Spotify Artist Top Tracks")
 
@@ -88,4 +93,5 @@ search_button.pack(pady=10)
 results_text = tk.Text(root, height=15, width=50)
 results_text.pack(pady=10)
 
+# Run the GUI event loop
 root.mainloop()
